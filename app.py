@@ -6,15 +6,67 @@ from langchain.schema import HumanMessage, SystemMessage
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# OpenAI API キーの取得（Secretsと環境変数から）
+def get_openai_api_key():
+    """
+    OpenAI API キーを複数のソースから取得する
+    1. Streamlitのsecrets（デプロイ時）
+    2. 環境変数（.envファイル含む）
+    """
+    # 1. Streamlitのsecretsから取得を試行
+    try:
+        if hasattr(st, 'secrets') and 'OPENAI_API_KEY' in st.secrets:
+            return st.secrets['OPENAI_API_KEY']
+    except Exception:
+        pass
+    
+    # 2. 環境変数から取得を試行
+    api_key = os.getenv("OPENAI_API_KEY")
+    if api_key:
+        return api_key
+    
+    return None
+
+OPENAI_API_KEY = get_openai_api_key()
 
 # Streamlitアプリのタイトル
 st.title("🤖 LangChain + Streamlit チャットアプリ")
 
 # OpenAI API キーの確認
 if not OPENAI_API_KEY:
-    st.error("OpenAI API キーが設定されていません。.envファイルにOPENAI_API_KEYを設定してください。")
+    st.error("❌ OpenAI API キーが設定されていません。")
+    
+    # Secrets設定手順を表示
+    with st.expander("🔧 Secrets設定方法", expanded=True):
+        st.write("**Streamlit Cloud でのSecrets設定:**")
+        st.code("""
+1. Streamlit Cloudのアプリ管理画面にアクセス
+2. 該当アプリの「Settings」をクリック
+3. 「Secrets」タブを選択
+4. 以下の内容を入力:
+
+OPENAI_API_KEY = "your_openai_api_key_here"
+
+5. 「Save」をクリック
+6. アプリが自動的に再デプロイされます
+        """, language="toml")
+        
+        st.write("**ローカル開発時（.envファイル）:**")
+        st.code("""
+1. プロジェクトルートに .env ファイルを作成
+2. 以下の内容を追加:
+
+OPENAI_API_KEY=your_openai_api_key_here
+
+3. アプリを再起動
+        """, language="bash")
+    
+    st.info("💡 **注意**: Secrets設定は本番デプロイ時の推奨方法です。API キーは安全に管理されます。")
     st.stop()
+else:
+    # API キーの取得元を表示
+    source = "Streamlit Secrets" if hasattr(st, 'secrets') and 'OPENAI_API_KEY' in st.secrets else "環境変数"
+    st.success(f"✅ OpenAI API キーが正常に設定されています（取得元: {source}）")
 
 # LLMの初期化
 @st.cache_resource
