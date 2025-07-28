@@ -26,7 +26,6 @@ def initialize_llm():
         temperature=0.7,
         openai_api_key=OPENAI_API_KEY
     )
-st.title(OPENAI_API_KEY+"テスト")
 
 llm = initialize_llm()
 
