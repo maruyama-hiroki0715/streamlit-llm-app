@@ -7,7 +7,7 @@ from langchain.schema import HumanMessage, SystemMessage
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-st.title(OPENAI_API_KEY+"テスト")
+
 if not OPENAI_API_KEY:
     OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY")
 # Streamlitアプリのタイトル
@@ -26,6 +26,7 @@ def initialize_llm():
         temperature=0.7,
         openai_api_key=OPENAI_API_KEY
     )
+st.title(OPENAI_API_KEY+"テスト")
 
 llm = initialize_llm()
 
